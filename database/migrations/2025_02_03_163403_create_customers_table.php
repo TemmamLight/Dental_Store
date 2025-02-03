@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('date_of_birth');
             $table->string('city');
             $table->string("address")->nullable();
+            $table->string('photo')->nullable(); // image
             $table->timestamps();
         });
     }

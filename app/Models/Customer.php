@@ -15,6 +15,7 @@ class Customer extends Model
         'date_of_birth',
         'city',
         'address',
+        'photo',
     ];
     
     protected $hidden = [

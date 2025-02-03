@@ -17,30 +17,52 @@ class CustomerResource extends Resource
 {
     protected static ?string $model = Customer::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup='Shop';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('number')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DatePicker::make('date_of_birth')
-                    ->required(),
-                Forms\Components\TextInput::make('city')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('address')
-                    ->maxLength(255)
-                    ->default(null),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('number')
+                            ->required()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('password')
+                            ->password()
+                            ->required()
+                            ->maxLength(255),
+                            Forms\Components\DatePicker::make('date_of_birth')
+                            ->required(),
+                    ]),
+                        ]),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make('address')
+                            ->schema([
+                                Forms\Components\TextInput::make('city')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('address')
+                                    ->maxLength(255)
+                                    ->default(null),
+                            ])->columns(2),
+                        Forms\Components\Section::make('image')
+                            ->schema([
+                                Forms\Components\FileUpload::make('photo')
+                                    ->image()
+                                    ->directory('customers-images')
+                                    ->preserveFilenames()
+                                    ->nullable()
+                                    ->imageEditor()
+                            ])
+                    ])
             ]);
     }
 
@@ -48,16 +70,22 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
+                
+                Tables\Columns\ImageColumn::make('photo')
+                ->circular(),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('number')
                     ->numeric()
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date_of_birth')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('city')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('address')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -73,8 +101,11 @@ class CustomerResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
