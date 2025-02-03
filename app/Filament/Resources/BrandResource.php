@@ -6,6 +6,7 @@ use App\Filament\Resources\BrandResource\Pages;
 use App\Filament\Resources\BrandResource\RelationManagers;
 use App\Models\Brand;
 use Filament\Forms;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -27,32 +28,49 @@ class BrandResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->live(onBlur:true)
-                    ->unique()
-                    ->afterStateUpdated(function (string $operation, $state, Forms\Set $set){
-                        if ($operation !== 'create'){
-                            return;
-                        }
-
-                        $set('slug', Str::slug($state));
-                    }),
-                Forms\Components\TextInput::make('slug')
-                    ->disabled()
-                    ->dehydrated()
-                    ->required()
-                    ->unique(Brand::class, 'slug', ignoreRecord:true),
-                Forms\Components\TextInput::make('url')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('primary_hex')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\Toggle::make('is_visible')
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make([
+                            Forms\Components\TextInput::make('name')
+                                ->required()
+                                ->live(onBlur:true)
+                                ->unique()
+                                ->afterStateUpdated(function (string $operation, $state, Forms\Set $set){
+                                    if ($operation !== 'create'){
+                                        return;
+                                    }
+                                    $set('slug', Str::slug($state));
+                                }),
+                            Forms\Components\TextInput::make('slug')
+                                ->disabled()
+                                ->dehydrated()
+                                ->required()
+                                ->unique(Brand::class, 'slug', ignoreRecord:true),
+                            Forms\Components\TextInput::make('url')
+                                ->required()
+                                ->label('Website URL')
+                                ->maxLength(255)
+                                ->columnSpan('full'),
+                            Forms\Components\Textarea::make('description')
+                                ->columnSpanFull(),
+                        ])->columns(2),
+                    ]),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make('status')
+                            ->schema([
+                                Forms\Components\Toggle::make('is_visible')
+                                    ->default(true)
+                                    ->label('Visibilty')
+                                    ->helperText('Enable or disable brand visibilty'),
+                            ]),
+                            Forms\Components\Section::make('Color')
+                                ->schema([
+                                    Forms\Components\ColorPicker::make('primary_hex')
+                                        ->label('primary Color'),
+                                ])
+                    ]),
+                
             ]);
     }
 
@@ -61,21 +79,24 @@ class BrandResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('url')
+                    ->label("Website Url")
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('primary_hex')
-                    ->searchable(),
+                Tables\Columns\ColorColumn::make('primary_hex')
+                    ->label('Primary Color'),
                 Tables\Columns\IconColumn::make('is_visible')
-                    ->boolean(),
+                    ->boolean()
+                    ->sortable()
+                    ->label('Visibility'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -83,8 +104,11 @@ class BrandResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
