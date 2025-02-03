@@ -30,6 +30,8 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->sidebarCollapsibleOnDesktop()
             ->font('Poppins')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

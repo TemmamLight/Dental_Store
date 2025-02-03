@@ -19,7 +19,7 @@ class Order extends Model
         'total_price',
         'status',
         'shipping_price',
-        'notes',
+        'notes'
     ];
 
     public function customer() : BelongsTo
@@ -29,7 +29,7 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderItem::class, 'order_id');
     }
 
     

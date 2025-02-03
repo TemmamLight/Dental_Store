@@ -37,11 +37,11 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    public function category(): BelongsToMany
+    public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class)->withTimestamps();
     }
-    // public function sales(): HasMany
+    //  public function sales(): HasMany
     // {
     //     return $this->hasMany(Sale::class);
     // }
