@@ -18,18 +18,21 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack'; 
-    
+    protected static ?string $navigationIcon = 'heroicon-o-tag'; 
+    protected static ?int $navigationSort = 4;
+    protected  static ?string $navigationGroup = 'Shop';
+     
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        Forms\Components\Section::make([
+                            Forms\Components\TextInput::make('name')
                             ->required()
                             ->live(onBlur:true)
-                            ->unique()
+                            ->unique(Category::class, 'name', ignoreRecord: true)
                             ->afterStateUpdated(function(string $operation, $state, Forms\Set $set){
                                 if ($operation !== 'create'){
                                     return;
@@ -45,16 +48,26 @@ class CategoryResource extends Resource
                             ->unique(Category::class, 'slug', ignoreRecord:true),
                         Forms\Components\MarkdownEditor::make('description')
                             ->columnSpanFull(),
+                        ])
                     ])->columns(2),
                     Forms\Components\Group::make()
                         ->schema([
-                            Forms\Components\Select::make('parent_id')
-                                ->relationship('parent', 'name')
-                                ->default(null),
-                            Forms\Components\Toggle::make('is_visible')
-                                ->required(),
+                            Forms\Components\Section::make('Status')
+                                ->schema([
+                                    Forms\Components\Toggle::make('is_visible')
+                                        ->label('Visibility')
+                                        ->helperText('Enable or disable category visibility. ')
+                                        ->default(true),
+                                    Forms\Components\Select::make('parent_id')
+                                        ->relationship('parent', 'name')
+                                        ->default(null),
+                                ]),
+                            
                             Forms\Components\FileUpload::make('image')
+                                ->directory('category-images')
+                                ->preserveFilenames()
                                 ->image()
+                                ->imageEditor()
                                 ->columnSpanFull(),
                         ]),
             ]);
@@ -64,31 +77,37 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable(),
                 Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('parent.name')
-                    ->numeric()
+                    ->label('Parent')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('is_visible')
-                    ->boolean(),
+                    ->boolean()
+                    ->label('Visibility')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
-                    ->sortable()
+                    ->label('updated Date')
+                    ->sortable() 
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
