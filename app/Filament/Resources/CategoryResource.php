@@ -21,6 +21,12 @@ class CategoryResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-tag'; 
     protected static ?int $navigationSort = 4;
     protected  static ?string $navigationGroup = 'Shop';
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static  function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'description', 'slug'];
+    }
      
     public static function form(Form $form): Form
     {
