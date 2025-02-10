@@ -19,7 +19,7 @@ class Order extends Model
         'total_price',
         'status',
         'shipping_price',
-        'notes'
+        'notes',
     ];
 
     public function customer() : BelongsTo

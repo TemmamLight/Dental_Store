@@ -26,6 +26,7 @@ class Product extends Model
         'status', 
         'image',
         'is_featured',
+        'is_visible',
         'date', // تاريخ الإضافة أو التحديث
         'type', // ['reserved', 'in_transit', 'delivered', 'paused']
         'category_id',
@@ -39,7 +40,7 @@ class Product extends Model
 
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class)->withTimestamps();
+        return $this->belongsToMany(Category::class);
     }
     //  public function sales(): HasMany
     // {

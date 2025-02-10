@@ -123,6 +123,11 @@ class ProductResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('brand_id')
                                     ->relationship('brand', 'name')
+                                    ->required(),
+                                Forms\Components\Select::make('category_id')
+                                    ->relationship('categories', 'name')
+                                    ->multiple()
+                                    ->required(),
                             ]), 
                     ]),
             ]);
@@ -151,7 +156,11 @@ class ProductResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
