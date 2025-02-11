@@ -238,6 +238,12 @@ class ProductResource extends Resource
     // دالة لتطبيق فلتر الفترة الزمنية على الاستعلام
     public static function applyTimeFilter($query, $timePeriod)
     {
+        // dd(Carbon::today()->toDateString());
+        if (is_array($timePeriod) && isset($timePeriod['value'])) {
+            $timePeriod = $timePeriod['value'];
+        }
+        
+        // dd($timePeriod === 'today');
         if ($timePeriod === 'today') {
             return $query->whereDate('created_at', Carbon::today());
         } elseif ($timePeriod === 'this_week') {
