@@ -33,13 +33,20 @@ class CustomerResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('number')
                             ->required()
-                            ->numeric(),
+                            ->numeric()
+                            ->unique(table: 'customers', column: 'number', ignoreRecord: true),
                         Forms\Components\TextInput::make('password')
                             ->password()
-                            ->required()
-                            ->maxLength(255),
-                            Forms\Components\DatePicker::make('date_of_birth')
-                            ->required(),
+                            ->maxLength(255)
+                            ->dehydrateStateUsing(fn ($state) => $state !== '' ? bcrypt($state) : null)
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->required(fn ($record) => $record === null) // Only required when creating a record
+                            ->confirmed(),
+                            
+                        Forms\Components\TextInput::make('password_confirmation')
+                            ->password()
+                            ->label('Confirm Password')
+                            ->required(fn ($state) => filled($state)),
                     ]),
                         ]),
                 Forms\Components\Group::make()
