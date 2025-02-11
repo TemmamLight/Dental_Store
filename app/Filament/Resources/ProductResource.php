@@ -2,19 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\OrderStatusEnum;
 use App\Enums\ProductTypeEnum;
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
+use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Str;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 
 class ProductResource extends Resource
 {
@@ -149,21 +153,66 @@ class ProductResource extends Resource
                 Tables\Columns\IconColumn::make('is_visible')->boolean(),
                 Tables\Columns\TextColumn::make('price'),
                 Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('published_at'),
+                Tables\Columns\TextColumn::make('published_at')
+                    ->date()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created At')
+                    ->date()
+                    ->toggleable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('type'),
             ])
+            ->headerActions([
+                Action::make('export_top_selling')
+                ->label('تصدير المنتجات الأكثر مبيعًا')
+                ->form([
+                    Select::make('time_period')
+                        ->label('حدد الفترة الزمنية')
+                        ->options([
+                            'today' => 'اليوم',
+                            'this_week' => 'هذا الأسبوع',
+                            'this_month' => 'هذا الشهر',
+                            'this_year' => 'هذه السنة',
+                            'all' => 'الكل',
+                        ])
+                        ->default('all'),
+                    Select::make('limit')
+                        ->label('عدد المنتجات')
+                        ->options([
+                            '5' => '5 منتجات',
+                            '10' => '10 منتجات',
+                            '20' => '20 منتج',
+                            '50' => '50 منتج',
+                        ])
+                        ->default('10'),
+                ])
+                ->action(fn (array $data) => self::exportTopSellingProducts($data['time_period'], $data['limit']))
+                ->color('success'),
+            ])
             ->filters([
-                //
+                SelectFilter::make('time_price')
+                    ->label('Filter by Time Period')
+                    ->options([
+                        'today' => 'اليوم',
+                        'this_week' => 'هذا الأسبوع',
+                        'this_month' => 'هذا الشهر',
+                        'this_year' => 'هذه السنة',
+                        'all' => 'الكل',
+                    ])
+                    ->default('all')
+                    ->query(fn ($query, $state) => self::applyTimeFilter($query, $state)),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ViewAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    ExportBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
@@ -184,5 +233,43 @@ class ProductResource extends Resource
             'view' => Pages\ViewProduct::route('/{record}'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    // دالة لتطبيق فلتر الفترة الزمنية على الاستعلام
+    public static function applyTimeFilter($query, $timePeriod)
+    {
+        if ($timePeriod === 'today') {
+            return $query->whereDate('created_at', Carbon::today());
+        } elseif ($timePeriod === 'this_week') {
+            return $query->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
+        } elseif ($timePeriod === 'this_month') {
+            return $query->whereMonth('created_at', Carbon::now()->month);
+        } elseif ($timePeriod === 'this_year') {
+            return $query->whereYear('created_at', Carbon::now()->year);
+        }
+        return $query;
+    }
+
+    // دالة لجلب المنتجات الأكثر مبيعًا
+    public static function getTopSellingProducts($timePeriod, $limit = 10)
+    {
+        return Product::withCount(['orderItems as total_sold' => function ($query) use ($timePeriod) {
+            $query->whereHas('order', function ($query) use ($timePeriod) {
+                $query->where('status', OrderStatusEnum::COMPLETED->value);
+                self::applyTimeFilter($query, $timePeriod);
+            });
+        }])
+        ->having('total_sold', '>', 0) // تصفية المنتجات التي لديها مبيعات مكتملة فقط
+        ->orderByDesc('total_sold')
+        ->take($limit)
+        ->get();
+    }
+
+    // دالة لتصدير المنتجات
+    public static function exportTopSellingProducts($timePeriod, $limit)
+    {
+        $products = self::getTopSellingProducts($timePeriod, $limit);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ProductExport($products), 'top_selling_products.xlsx');
     }
 }

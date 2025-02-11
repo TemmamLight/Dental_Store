@@ -11,9 +11,8 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderResource extends Resource
 {
@@ -57,7 +56,7 @@ class OrderResource extends Resource
                             ->dehydrated()
                             ->required()
                             ->numeric(),
-                        Forms\Components\Select::make('type')
+                        Forms\Components\Select::make('status')
                             ->options([
                                 'pending' => OrderStatusEnum::PENDING->value,
                                 'processing' => OrderStatusEnum::PROCESSING->value,
@@ -150,6 +149,7 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    ExportBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

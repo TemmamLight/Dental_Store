@@ -18,4 +18,9 @@ class OrderItem extends Model
         'unit_price'
     ];
 
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
 }

@@ -42,19 +42,14 @@ class Product extends Model
     {
         return $this->belongsToMany(Category::class);
     }
-    //  public function sales(): HasMany
-    // {
-    //     return $this->hasMany(Sale::class);
-    // }
-
-    // العلاقة مع المفضلة (Polymorphic)
-    // public function favorites(): MorphMany
-    // {
-    //     return $this->morphMany(Favorite::class, 'favoritable');
-    // }
-    // حساب إجمالي الكمية المباعة
+    
     public function getTotalSoldAttribute(): int
     {
-        return $this->sales()->sum('quantity');
+        return $this->orderItems()->sum('quantity');
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'product_id');
     }
 }
