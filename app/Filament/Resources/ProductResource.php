@@ -53,6 +53,8 @@ class ProductResource extends Resource
     {
         return parent::getGlobalSearchEloquentQuery()->with('brand');
     }
+    
+    
 
     public static function form(Form $form): Form
     {
@@ -63,7 +65,7 @@ class ProductResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->live(onBlur:true)
-                            ->unique()
+                            ->unique(ignoreRecord: true)
                             ->afterStateUpdated(function(string $operation, $state, Forms\Set $set){
                                 if ($operation !== 'create'){
                                     return ;
@@ -81,12 +83,13 @@ class ProductResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('sku')
                                     ->label('SKU (Stock Keeping Unit)')
-                                    ->unique()
+                                    ->unique(ignoreRecord: true)
                                     ->required(),
                                 Forms\Components\TextInput::make('price')
                                     ->numeric()
-                                    ->rules('regex:/^\d{1,6}(\,\d{0,2})?$/')
-                                    ->required(),
+                                    ->rules('regex:/^\d{1,6}([.,]\d{0,2})?$/')
+                                    ->required()
+                                    ->dehydrateStateUsing(fn ($state) => convertArabicToEnglishNumbers($state)),
                                 Forms\Components\TextInput::make('quantity')
                                 ->numeric()
                                 ->minValue(0)

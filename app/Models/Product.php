@@ -37,6 +37,11 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+    
+    public function setPriceAttribute($value)
+    {
+        $this->attributes['price'] = convertArabicToEnglishNumbers($value);
+    }
 
     public function categories(): BelongsToMany
     {
