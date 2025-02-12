@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->enum('type', ['deliverable', 'downloadable'])->default('deliverable');
             $table->foreignId('category_id')->nullable()->constrained('categories')->cascadeOnDelete();
+            $table->foreignId('section_id')->nullable()->constrained('sections')->cascadeOnDelete();
             $table->timestamps();
         });
     }
