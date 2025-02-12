@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Section extends Model
 {
-    protected $fillable = ['name', 'description', 'product_id', 'parent_id'];
+    protected $fillable = ['name', 'description',  'parent_id'];
 
     public function children(): HasMany
     {
@@ -18,7 +18,7 @@ class Section extends Model
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'parent_id');
+        return $this->belongsTo(Section::class, 'parent_id');
     }
 
     public function products(): BelongsToMany
