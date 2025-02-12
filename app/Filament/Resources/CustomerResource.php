@@ -35,6 +35,10 @@ class CustomerResource extends Resource
                             ->required()
                             ->numeric()
                             ->unique(table: 'customers', column: 'number', ignoreRecord: true),
+                        Forms\Components\TextInput::make('email')
+                            ->email()
+                            ->nullable()
+                            ->unique(table: 'customers', column: 'email', ignoreRecord: true),
                         Forms\Components\TextInput::make('password')
                             ->password()
                             ->maxLength(255)
@@ -87,6 +91,10 @@ class CustomerResource extends Resource
                     ->numeric()
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('date_of_birth')
                     ->date()
                     ->sortable(),

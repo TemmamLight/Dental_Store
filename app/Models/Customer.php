@@ -12,6 +12,8 @@ class Customer extends Model
         'name',
         'password',
         'number',
+        'email',
+        'verification_code',
         'date_of_birth',
         'city',
         'address',
