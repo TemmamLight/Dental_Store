@@ -18,7 +18,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->string('number')->unique();
             $table->decimal('total_price', 10, 2);
-            $table->enum('status', ['pending', 'processing', 'completed', 'declined'])->default('pending');
+            $table->enum('status', ['pending', 'processing', 'shipping', 'completed', 'declined'])->default('pending');
             $table->decimal('shipping_price')->nullable();
             $table->longText('notes');
             $table->softDeletes();

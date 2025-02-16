@@ -58,10 +58,11 @@ class OrderResource extends Resource
                             ->numeric(),
                         Forms\Components\Select::make('status')
                             ->options([
-                                'pending' => OrderStatusEnum::PENDING->value,
-                                'processing' => OrderStatusEnum::PROCESSING->value,
-                                'completed' => OrderStatusEnum::COMPLETED->value,
-                                'declined' => OrderStatusEnum::DECLINED->value,
+                                OrderStatusEnum::PENDING->value => OrderStatusEnum::PENDING->label(),
+                                OrderStatusEnum::PROCESSING->value => OrderStatusEnum::PROCESSING->label(),
+                                OrderStatusEnum::SHIPPING->value => OrderStatusEnum::SHIPPING->label(),
+                                OrderStatusEnum::COMPLETED->value => OrderStatusEnum::COMPLETED->label(),
+                                OrderStatusEnum::DECLINED->value => OrderStatusEnum::DECLINED->label(),
                             ])
                             ->required(), 
                         Forms\Components\MarkdownEditor::make('notes')
@@ -118,6 +119,8 @@ class OrderResource extends Resource
                     ->toggleable(),
                 
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Order status')
+                    ->formatStateUsing(fn(string $state) => OrderStatusEnum::tryFrom($state)?->label()?? $state)
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('shipping_price')
