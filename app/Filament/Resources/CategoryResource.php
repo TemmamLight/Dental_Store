@@ -62,7 +62,7 @@ class CategoryResource extends Resource
                         ->schema([
                             Forms\Components\Section::make('Status')
                                 ->schema([
-                                    Forms\Components\Toggle::make('is_visible')
+                                    Forms\Components\Toggle::make('is_visiable')
                                         ->label('Visibility')
                                         ->helperText('Enable or disable category visibility. ')
                                         ->default(true),

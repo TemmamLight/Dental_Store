@@ -18,7 +18,7 @@ class Category extends Model
         'description',
         'image',
         'parent_id',
-        'is_visible',
+        'is_visiable',
 
     ];
 

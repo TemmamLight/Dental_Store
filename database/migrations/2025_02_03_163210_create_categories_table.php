@@ -21,7 +21,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('categories')
                 ->cascadeOnDelete();
-            $table->boolean('is_visible')->default(false);
+            $table->boolean('is_visiable')->default(false);
             $table->timestamps();
         });
     }

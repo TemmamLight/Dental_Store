@@ -17,6 +17,7 @@ return new class extends Migration
                 ->constrained('orders')
                 ->cascadeOnDelete();
             $table->foreignId('product_id')
+                ->nullable()
                 ->constrained('products')
                 ->cascadeOnDelete();
             $table->unsignedBigInteger('quantity'); // الكمية

@@ -17,7 +17,13 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone_number' => fake()->phoneNumber(),
+            'password' => bcrypt('password'),
+            'date_of_birth' => fake()->date(),
+            'city' => fake()->city(),
+            'address' => fake()->address(),
         ];
     }
 }

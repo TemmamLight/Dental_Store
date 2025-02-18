@@ -31,10 +31,10 @@ class CustomerResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('number')
+                        Forms\Components\TextInput::make('phone_number')
                             ->required()
                             ->numeric()
-                            ->unique(table: 'customers', column: 'number', ignoreRecord: true),
+                            ->unique(table: 'customers', column: 'phone_number', ignoreRecord: true),
                         Forms\Components\TextInput::make('email')
                             ->email()
                             ->nullable()
@@ -87,7 +87,7 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('number')
+                Tables\Columns\TextColumn::make('phone_number')
                     ->numeric()
                     ->searchable()
                     ->sortable(),
