@@ -27,8 +27,8 @@ class Product extends Model
         'image',
         'is_featured',
         'is_visible',
-        'date', // تاريخ الإضافة أو التحديث
-        'type', // ['reserved', 'in_transit', 'delivered', 'paused']
+        'date', 
+        'type', // ['deliverable', 'downloadable']
         'category_id',
         
     ];

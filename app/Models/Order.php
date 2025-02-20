@@ -21,6 +21,7 @@ class Order extends Model
         'status',
         'shipping_price',
         'notes',
+        'order_type',
     ];
 
 
@@ -31,8 +32,13 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class, 'order_id');
+        return $this->hasMany(OrderItem::class);
     }
 
+    public function getStatusLabelAttribute(): string
+    {
+        return OrderStatusEnum::tryFrom($this->status)?->label() ?? $this->status;
+    }
+    
     
 }

@@ -17,10 +17,10 @@ return new class extends Migration
                 ->constrained('orders')
                 ->cascadeOnDelete();
             $table->foreignId('product_id')
-                ->nullable()
-                ->constrained('products')
-                ->cascadeOnDelete();
-            $table->unsignedBigInteger('quantity'); // الكمية
+                ->nullable()->constrained('products')->cascadeOnDelete();
+            $table->foreignId('custom_order_item_id')
+                ->nullable()->constrained('custom_order_items')->cascadeOnDelete();
+            $table->unsignedBigInteger('quantity'); 
             $table->decimal('unit_price', 10, 2);
             $table->timestamps();
         });

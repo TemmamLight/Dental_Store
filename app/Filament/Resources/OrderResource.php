@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Enums\OrderStatusEnum;
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\Product;
 use Filament\Forms;
@@ -23,27 +22,30 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
     protected static ?int $navigationSort = 3;
 
+    protected function getTableQuery()
+    {
+        return parent::getTableQuery()->with(['items.product', 'items.custom_order_item']);
+    }
     public static function getNavigationBadge() : string
     {
-        return static::getModel()::where('status', '=', 'processing')->count();
+        return static::getModel()::where('status', '=', 'pending')->count();
     }
 
     public static function getNavigationBadgeColor() :string
     {
-        return static::getModel()::where('status', '=', 'processing')->count() > 10 
+        return static::getModel()::where('status', '=', 'pending')->count() > 10 
             ? 'warning'
             : 'primary';
     }
     
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Wizard::make([
-                    Forms\Components\Wizard\Step::make('Order Details')
+        return $form->schema([
+            Forms\Components\Wizard::make([
+                Forms\Components\Wizard\Step::make('Order Details')
                     ->schema([
                         Forms\Components\TextInput::make('number')
-                            ->default('OR-'. random_int(100000, 999999))
+                            ->default('OR-' . random_int(100000, 999999))
                             ->disabled()
                             ->dehydrated()
                             ->required(),
@@ -52,59 +54,88 @@ class OrderResource extends Resource
                             ->searchable()
                             ->required(),
                         Forms\Components\TextInput::make('shipping_price')
-                            ->label('Shiping Cost')
-                            ->dehydrated()
-                            ->required()
-                            ->numeric(),
+                            ->label('Shipping Cost')
+                            ->default(0)
+                            ->numeric()
+                            ->required(),
                         Forms\Components\Select::make('status')
+                            ->options(OrderStatusEnum::options())
+                            ->required(),
+                        Forms\Components\Select::make('order_type')
                             ->options([
-                                OrderStatusEnum::PENDING->value => OrderStatusEnum::PENDING->label(),
-                                OrderStatusEnum::PROCESSING->value => OrderStatusEnum::PROCESSING->label(),
-                                OrderStatusEnum::SHIPPING->value => OrderStatusEnum::SHIPPING->label(),
-                                OrderStatusEnum::COMPLETED->value => OrderStatusEnum::COMPLETED->label(),
-                                OrderStatusEnum::DECLINED->value => OrderStatusEnum::DECLINED->label(),
+                                'regular' => 'طلب عادي',
+                                'custom' => 'طلب خاص'
                             ])
-                            ->required(), 
-                        Forms\Components\MarkdownEditor::make('notes')
-                            ->columnSpanFull()
+                            ->live()
                             ->required()
+                            ->reactive(),
+                        Forms\Components\MarkdownEditor::make('notes')
+                            ->columnSpanFull(),
                     ])->columns(2),
-                    Forms\Components\Wizard\Step::make('Order Items')
-                        ->schema([
-                            Forms\Components\Repeater::make('items')
-                                ->relationship()
-                                ->schema([
-                                    Forms\Components\Select::make('product_id')
-                                        ->label('Product')
-                                        ->options(Product::query()->pluck('name', 'id'))
-                                        ->required()
-                                        ->reactive()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set){
-                                            $set('unit_price',Product::find($state)?->price??0);
-                                        }),
+                Forms\Components\Wizard\Step::make('Order Items')
+                    ->schema([
+                        Forms\Components\Section::make('Regular Order Items')
+                            ->schema([
+                                Forms\Components\Repeater::make('items') 
+                                    ->relationship()
+                                    ->schema([
+                                        Forms\Components\Select::make('product_id')
+                                            ->label('Product')
+                                            ->options(Product::pluck('name', 'id'))
+                                            ->searchable()
+                                            ->reactive()
+                                            ->required()
+                                            ->afterStateUpdated(function ($state, $set) {
+                                                    $set('unit_price', Product::find($state)?->price ?? 0);
+                                                }),
+                                        Forms\Components\TextInput::make('quantity')
+                                            ->numeric()
+                                            ->default(1)
+                                            ->required(),
 
-                                    Forms\Components\TextInput::make('quantity')
-                                        ->numeric()
-                                        ->default(1)
-                                        ->live()
-                                        ->dehydrated()
-                                        ->required(),
-                                    Forms\Components\TextInput::make('unit_price')
-                                        ->label('Unit Price')
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->numeric()
-                                        ->required(),
-                                    Forms\Components\Placeholder::make('total_price')
-                                        ->label('Total Price')
-                                        ->content(function($get){
-                                            return floatval($get('quantity')) * floatval($get('unit_price'));
-                                        }),
-                                ])->columns(4), 
-                        ]),
-                ])->columnSpanFull(),
-            ]);
+                                        Forms\Components\TextInput::make('unit_price')
+                                            ->numeric()
+                                            ->required(),
+                                    ])
+                                    ->columns(3)
+                                    ->visible(fn ($get)=> $get('order_type') === 'regular'),
+                                ]),
+                        Forms\Components\Section::make('Custom Order Items')
+                            ->schema([
+                                Forms\Components\Repeater::make('custom_items')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('merchant_name')
+                                            ->label('Merchant Name')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('product_name')
+                                            ->label('Product Name')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('brand')
+                                            ->label('brand')
+                                            ->nullable(),
+                                        Forms\Components\Textarea::make('description')
+                                            ->label('description Product')
+                                            ->nullable(),
+                                        Forms\Components\TextInput::make('quantity')
+                                            ->numeric()
+                                            ->default(1)
+                                            ->required(),
+                                        
+                                        Forms\Components\TextInput::make('unit_price')
+                                            ->label('unit Price')
+                                            ->numeric()
+                                            ->required()
+                                    ])
+                                        ->columns(3)
+                                        ->visible(fn ($get) => $get('order_type') === 'custom'),
+                            ]),
+                    ])
+            ])->columnSpanFull()
+        ]);
     }
+
+
+
 
     public static function table(Table $table): Table
     {
@@ -121,10 +152,23 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Order status')
                     ->formatStateUsing(fn(string $state) => OrderStatusEnum::tryFrom($state)?->label()?? $state)
+                    ->color(fn($state) => OrderStatusEnum::tryFrom($state)?->color())
                     ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('items.product.name')
+                    ->label('Regular Product')
+                    ->visible(fn($record) => optional($record)->order_type === 'regular'),
+
+                Tables\Columns\TextColumn::make('items.custom_order_item.product_name')
+                    ->label('Custom Product')
+                    ->visible(fn($record) => optional($record)->order_type === 'custom'),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->numeric()
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('shipping_price')
                     ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
@@ -141,7 +185,11 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('order_type')
+                    ->options([
+                        'regular' => 'Regqular Order',
+                        'custom' => 'Custom Order',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
