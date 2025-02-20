@@ -148,20 +148,23 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                
                 Tables\Columns\TextColumn::make('status')
                     ->label('Order status')
                     ->formatStateUsing(fn(string $state) => OrderStatusEnum::tryFrom($state)?->label()?? $state)
                     ->color(fn($state) => OrderStatusEnum::tryFrom($state)?->color())
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('items.product.name')
-                    ->label('Regular Product')
-                    ->visible(fn($record) => optional($record)->order_type === 'regular'),
-
-                Tables\Columns\TextColumn::make('items.custom_order_item.product_name')
-                    ->label('Custom Product')
-                    ->visible(fn($record) => optional($record)->order_type === 'custom'),
+                Tables\Columns\TextColumn::make('order_type')
+                    ->label('Order Type')
+                    ->sortable()
+                    ->searchable()
+                    ->icon(fn($state) => $state === 'regular' ? 'heroicon-o-shopping-bag' : 'heroicon-o-cube')
+                    ->formatStateUsing(function ($state) {
+                            return $state === 'regular' ? 'Regular' : 'Custom';
+                        })
+                        ->color(function ($state) {
+                            return $state === 'regular' ? 'success' : 'warning';
+                        }),
                 Tables\Columns\TextColumn::make('total_price')
                     ->numeric()
                     ->toggleable()
@@ -182,6 +185,13 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('items.product.name')
+                    ->label('Regular Product')
+                    ->toggleable(isToggledHiddenByDefault:true),
+
+                Tables\Columns\TextColumn::make('items.custom_order_item.product_name')
+                    ->label('Custom Product')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
