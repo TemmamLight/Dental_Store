@@ -22,21 +22,25 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
     protected static ?int $navigationSort = 3;
 
+    
     protected function getTableQuery()
     {
         return parent::getTableQuery()->with(['items.product', 'items.custom_order_item']);
     }
-    public static function getNavigationBadge() : string
+    public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('status', '=', 'pending')->count();
     }
 
-    public static function getNavigationBadgeColor() :string
+    public static function getNavigationBadgeColor(): string|array|null
     {
-        return static::getModel()::where('status', '=', 'pending')->count() > 10 
-            ? 'warning'
-            : 'primary';
+        $totalPending = static::getModel()::where('status', 'pending')->count();
+        
+        return $totalPending > 15 ? 'danger' 
+            : ($totalPending > 5 ? 'warning' 
+            : 'success');
     }
+
     
     public static function form(Form $form): Form
     {
@@ -151,7 +155,26 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Order status')
                     ->formatStateUsing(fn(string $state) => OrderStatusEnum::tryFrom($state)?->label()?? $state)
-                    ->color(fn($state) => OrderStatusEnum::tryFrom($state)?->color())
+                    ->color(function ($state) {
+                            return match($state) {
+                                'pending' => 'gray',
+                                'processing' => 'primary',
+                                'shipping' => 'warning',
+                                'completed' => 'success',
+                                'declined' => 'danger',
+                                default => 'gray'
+                            };
+                        })
+                    ->icon(function ($state) {
+                            return match($state) {
+                                'pending' => 'heroicon-o-clock',
+                                'processing' => 'heroicon-o-cog',
+                                'shipping' => 'heroicon-o-truck',
+                                'completed' => 'heroicon-o-check-circle',
+                                'declined' => 'heroicon-o-x-circle',
+                                default => 'heroicon-o-question-mark-circle'
+                            };
+                        })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('order_type')
@@ -195,6 +218,15 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Pending Orders')
+                    ->options([
+                        'pending' => 'Pending Orders', 
+                        'processing' => 'Processing Orders',
+                        'shipping' => 'Shipping Orders',
+                        'completed' => 'Completed Orders',
+                        'declined' => 'Declined Orders',
+                    ]),
                 Tables\Filters\SelectFilter::make('order_type')
                     ->options([
                         'regular' => 'Regqular Order',
