@@ -52,4 +52,9 @@ class Category extends Model
     {
         return $this->belongsToMany(Product::class);
     }
+
+    public function faviorites()
+    {
+        return $this->morphMany(Favorite::class, 'favoriteable');
+    }
 }

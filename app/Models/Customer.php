@@ -25,16 +25,8 @@ class Customer extends Model
     protected $hidden = [
         'password',
     ];
-
-     // العلاقة مع المبيعات
-    // public function sales(): HasMany
-    // {
-    //     return $this->hasMany(Sale::class);
-    // }
-
-    // العلاقة مع المفضلة
-    // public function favorites(): HasMany
-    // {
-    //     return $this->hasMany(Favorite::class);
-    // }
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
 }

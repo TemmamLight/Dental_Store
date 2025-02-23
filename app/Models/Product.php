@@ -62,4 +62,9 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class, 'product_id');
     }
+
+    public function favirites(): MorphMany
+    {
+        return $this->morphMany(Favorite::class, 'favoriteable');
+    }
 }
