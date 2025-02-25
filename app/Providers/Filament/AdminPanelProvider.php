@@ -2,15 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use Althinect\FilamentSpatieRolesPermissions\Commands\Permission;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
-use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages;
-use Filament\Pages\Auth\Login;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -22,6 +21,16 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
+use App\Filament\Resources\BrandResource;
+use App\Filament\Resources\CategoryResource;
+use App\Filament\Resources\CustomerResource;
+use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\ProductResource;
+use App\Filament\Resources\SectionResource;
+use App\Filament\Resources\UserResource;
+use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\NavigationGroup;
+use Filament\Pages\Dashboard;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -36,13 +45,6 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Blue,
             ])
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
-            ->navigationItems([
-                NavigationItem::make('Application')
-                    ->url('https://blog.codewithdary.com', shouldOpenInNewTab:true)
-                    ->icon('heroicon-o-pencil-square')
-                    ->group('External')
-                    ->sort(2)
-            ])
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Settings')
@@ -77,6 +79,58 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugin(FilamentSpatieRolesPermissionsPlugin::make());
+            ->plugin(FilamentSpatieRolesPermissionsPlugin::make())
+            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+                return $builder->groups([
+                    NavigationGroup::make()
+                        ->items([
+                            NavigationItem::make('Dashboard')
+                                ->icon('heroicon-o-home')
+                                ->isActiveWhen(fn (): bool => request()->routeIs('filament.admin.pages.dashboard'))
+                                ->url(fn (): string => Dashboard::getUrl()),
+                        ]),
+                    NavigationGroup::make('Website')
+                        ->items([
+                            ...UserResource::getNavigationItems(),
+                            ...CustomerResource::getNavigationItems(),
+                            ...BrandResource::getNavigationItems(),
+                        ]),
+                    NavigationGroup::make('shop')
+                        ->items([
+                            ...OrderResource::getNavigationItems(),
+                            ...ProductResource::getNavigationItems(),
+                            ...SectionResource::getNavigationItems(),
+                            ...CategoryResource::getNavigationItems(),
+                        ]),
+                    NavigationGroup::make('Settings')
+                        ->items([
+                            NavigationItem::make('Roles')
+                                ->icon('heroicon-o-lock-closed')
+                                ->isActiveWhen(fn (): bool => request()->routeIs([
+                                    'filament.admin.resources.roles.index',
+                                    'filament.admin.resources.roles.create',
+                                    'filament.admin.resources.roles.edit',
+                                    'filament.admin.resources.roles.view',
+                                ]))
+                                ->url(fn (): string => '/roles'),
+                            NavigationItem::make('Permissions')
+                                ->icon('heroicon-o-lock-closed')
+                                ->isActiveWhen(fn (): bool => request()->routeIs([
+                                    'filament.admin.permissions.index',
+                                    'filament.admin.permissions.create',
+                                    'filament.admin.permissions.edit',
+                                    'filament.admin.permissions.view',
+                                ]))
+                                ->url(fn (): string => '/permissions'),
+                        ]),
+                    NavigationGroup::make('External')
+                        ->items([
+                            NavigationItem::make('Application')
+                                ->url('https://blog.codewithdary.com', shouldOpenInNewTab:true)
+                                ->icon('heroicon-o-pencil-square')
+                                ->sort(2),
+                    ]),
+                ]);
+            });
     }
 }
