@@ -7,17 +7,20 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\Page;
+use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    
 
     public static function form(Form $form): Form
     {
@@ -37,12 +40,15 @@ class UserResource extends Resource
                     ->label('تاريخ التحقق من البريد الإلكتروني')
                     ->displayFormat('Y-m-d H:i:s')
                     ->visible(fn ($record) => $record !== null), 
+                    
+                Forms\Components\Select::make('roles')->multiple()->relationship('roles', 'name')
+                        ->default(['user']),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->maxLength(255)
-                    ->dehydrateStateUsing(fn ($state) => $state !== '' ? bcrypt($state) : null)
+                    ->dehydrateStateUsing(fn (string $state):string =>  Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn ($record) => $record === null)
+                    ->required(fn (Page $livewire):bool => $livewire instanceof CreateRecord)
                     ->confirmed(),
                 Forms\Components\TextInput::make('password_confirmation')
                             ->password()
@@ -61,9 +67,7 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone_number')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('roles.name'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

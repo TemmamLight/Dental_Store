@@ -13,7 +13,7 @@ return [
 
     'navigation_section_group' => 'Settings', // Default uses language constant
 
-    'team_model' => \App\Models\Team::class,
+    // 'team_model' => \App\Models\Team::class,
 
     'scope_to_tenant' => true,
 
