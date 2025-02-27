@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use Althinect\FilamentSpatieRolesPermissions\Commands\Permission;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -31,6 +30,9 @@ use App\Filament\Resources\UserResource;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -40,6 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('/')
             ->path('/')
+            ->profile()
             ->login()
             ->colors([
                 'primary' => Color::Blue,
@@ -112,7 +115,8 @@ class AdminPanelProvider extends PanelProvider
                                     'filament.admin.resources.roles.edit',
                                     'filament.admin.resources.roles.view',
                                 ]))
-                                ->url(fn (): string => '/roles'),
+                                ->url(fn (): string => '/roles')
+                                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Role::class)),
                             NavigationItem::make('Permissions')
                                 ->icon('heroicon-o-lock-closed')
                                 ->isActiveWhen(fn (): bool => request()->routeIs([
@@ -121,7 +125,8 @@ class AdminPanelProvider extends PanelProvider
                                     'filament.admin.permissions.edit',
                                     'filament.admin.permissions.view',
                                 ]))
-                                ->url(fn (): string => '/permissions'),
+                                ->url(fn (): string => '/permissions')
+                                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Permission::class)),
                         ]),
                     NavigationGroup::make('External')
                         ->items([

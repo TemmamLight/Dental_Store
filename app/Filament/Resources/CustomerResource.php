@@ -12,6 +12,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Facades\Filament;
+use Filament\Navigation\NavigationItem;
+
 
 class CustomerResource extends Resource
 {
@@ -21,6 +24,17 @@ class CustomerResource extends Resource
     protected static ?string $navigationGroup='Shop';
     protected static ?int $navigationSort = 2;
 
+
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('Customers')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Customer::class)),
+        ];
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -33,7 +47,6 @@ class CustomerResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone_number')
                             ->required()
-                            ->numeric()
                             ->unique(table: 'customers', column: 'phone_number', ignoreRecord: true),
                         Forms\Components\TextInput::make('email')
                             ->email()
