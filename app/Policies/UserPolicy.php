@@ -35,7 +35,17 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->hasPermissionTo('update User') || $user->id === $model->id || $user->roles('super admin');
+        // return $user->hasPermissionTo('update User') || $user->id === $model->id || $user->roles('super admin');
+        // يسمح للمستخدم السوبر أدمن بتعديل نفسه فقط
+        if ($user->hasRole('super admin') && $model->id === $user->id) {
+            return true;
+        }
+
+        if ($model->hasRole('super admin')) {
+            return false;
+        }
+
+        return $user->can('update User');
     }
 
     /**
@@ -43,7 +53,10 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->hasPermissionTo('delete User')  || $user->roles('super admin');
+        if ($model->hasRole('super admin')) {
+            return false;
+        }
+        return $user->hasPermissionTo('delete User');
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Models\User;
 
 
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Artisan;
 
 use Illuminate\Database\Seeder;
@@ -23,6 +24,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create a super admin user
         $user = User::factory()->create([
             'name' => 'abod',
             'email' => 'abod@a.com',
@@ -35,16 +37,26 @@ class DatabaseSeeder extends Seeder
         Category::factory()->count(5)->create();
         Product::factory()->count(10)->create();
 
-        // Automatically sync permissions as defined in the package configuration
-        Artisan::call('permissions:sync');
+        // Define the basic permissions based on your policies
+        $permissions = ['view-any', 'view', 'create', 'update', 'delete', 'restore', 'force-delete'];
+        $models = ['User', 'Product', 'Brand', 'Customer', 'Category', 'Order', 'Section', 'Role', 'Permission'];
 
-        // Create roles if they do not exist
+        // Create permissions for each model
+        foreach ($models as $model) {
+            foreach ($permissions as $permission) {
+                Permission::firstOrCreate(['name' => "$permission $model"]);
+            }
+        }
+
+        // Create roles
         $superAdminRole = Role::firstOrCreate(['name' => 'super admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $userRole = Role::firstOrCreate(['name' => 'user']);
 
+        // Assign all permissions to super admin
+        $superAdminRole->syncPermissions(Permission::all());
+        
         // Assign the first user the super admin role
         $user->assignRole($superAdminRole);
-
     }
 }
