@@ -7,7 +7,13 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+
+
+
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Artisan;
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -17,17 +23,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'abod ',
+        $user = User::factory()->create([
+            'name' => 'abod',
             'email' => 'abod@a.com',
-            'password'=>'password',
+            'password' => bcrypt('password'),
         ]);
+
+        // Seed other data
         Brand::factory()->count(3)->create();
         Customer::factory()->count(5)->create();
         Category::factory()->count(5)->create();
-        $products = Product::factory()->count(10)->create();
+        Product::factory()->count(10)->create();
+
+        // Automatically sync permissions as defined in the package configuration
+        Artisan::call('permissions:sync');
+
+        // Create roles if they do not exist
+        $superAdminRole = Role::firstOrCreate(['name' => 'super admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $userRole = Role::firstOrCreate(['name' => 'user']);
+
+        // Assign the first user the super admin role
+        $user->assignRole($superAdminRole);
 
     }
 }

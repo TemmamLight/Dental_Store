@@ -23,11 +23,9 @@ class Product extends Model
         'published_at',
         'quantity',
         'price',
-        'status', 
         'image',
         'is_featured',
         'is_visible',
-        'date', 
         'type', // ['deliverable', 'downloadable']
         'category_id',
         
