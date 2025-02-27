@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
+use Filament\Navigation\NavigationItem;
 
 class BrandResource extends Resource
 {
@@ -23,6 +24,16 @@ class BrandResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
 
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('Brand')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Brand::class)),
+        ];
+    }
     public static function form(Form $form): Form
     {
         return $form

@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use Filament\Tables\Table;
+use Filament\Navigation\NavigationItem;
 
 class OrderResource extends Resource
 {
@@ -22,6 +23,17 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
     protected static ?int $navigationSort = 3;
 
+
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('Order')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Order::class)),
+        ];
+    }
     
     protected function getTableQuery()
     {

@@ -19,6 +19,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Str;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use Filament\Navigation\NavigationItem;
 
 class ProductResource extends Resource
 {
@@ -31,6 +32,17 @@ class ProductResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static int $globalSearchResultsLimit = 20;
+
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('Product')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Product::class)),
+        ];
+    }
 
     public static function getNavigationBadge(): ?string
     {

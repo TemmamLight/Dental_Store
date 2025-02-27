@@ -12,12 +12,24 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Navigation\NavigationItem;
 
 class SectionResource extends Resource
 {
     protected static ?string $model = Section::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('Section')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Section::class)),
+        ];
+    }
 
     public static function form(Form $form): Form
     {

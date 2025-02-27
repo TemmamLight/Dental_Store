@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Relationship;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
+use Filament\Navigation\NavigationItem;
 
 class CategoryResource extends Resource
 {
@@ -24,6 +25,17 @@ class CategoryResource extends Resource
     protected static ?int $navigationSort = 4;
     protected  static ?string $navigationGroup = 'Shop';
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('Category')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', Category::class)),
+        ];
+    }
 
     public static  function getGloballySearchableAttributes(): array
     {

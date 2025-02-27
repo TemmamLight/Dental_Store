@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Filament\Navigation\NavigationItem;
 
 class UserResource extends Resource
 {
@@ -21,7 +22,16 @@ class UserResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     
-
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make()
+                ->label('User')
+                ->icon('heroicon-o-user-group')
+                ->url(static::getUrl('index'))
+                ->visible(fn () => \Illuminate\Support\Facades\Gate::allows('viewAny', User::class)),
+        ];
+    }
     public static function form(Form $form): Form
     {
         return $form
