@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Navigation\NavigationItem;
+use Carbon\Carbon;
 
 
 class CustomerResource extends Resource
@@ -73,6 +74,14 @@ class CustomerResource extends Resource
                                 Forms\Components\TextInput::make('address')
                                     ->maxLength(255)
                                     ->default(null),
+                                Forms\Components\DatePicker::make('date_of_birth')
+                                    ->default(now()->subYears(20))
+                                    ->displayFormat('Y-m-d') 
+                                    ->minDate(now()->subYears(100))
+                                    ->maxDate(now()->subYears(5)),
+                                Forms\Components\TextInput::make('verification_code')
+                                    ->numeric()
+                                    ->maxLength(6),
                             ])->columns(2),
                         Forms\Components\Section::make('image')
                             ->schema([
@@ -81,7 +90,7 @@ class CustomerResource extends Resource
                                     ->directory('customers-images')
                                     ->preserveFilenames()
                                     ->nullable()
-                                    ->imageEditor()
+                                    ->imageEditor(),
                             ])
                     ])
             ]);
@@ -101,6 +110,9 @@ class CustomerResource extends Resource
                     ->numeric()
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('verification_code')
+                    ->numeric()
+                    ->toggleable(isToggledHiddenByDefault:true),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->sortable()
