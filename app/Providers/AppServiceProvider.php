@@ -23,6 +23,11 @@ use App\Policies\CategoryPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\SectionPolicy;
 
+//api
+use Illuminate\Support\Str;
+use Dedoc\Scramble\Scramble;
+use Illuminate\Routing\Route;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -38,6 +43,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // api
+        Scramble::configure()
+        ->routes(function (Route $route) {
+            return Str::startsWith($route->uri, 'api/');
+        });
+
+        // policies
         Gate::policy(Customer::class, CustomerPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
