@@ -16,8 +16,15 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
-    Route::prefix('customer')->group(function (){
-        Route::post('/login', [CustomerController::class, 'login']);
+    Route::prefix('auth')->group(function (){
+        Route::post('/login-by-email', [CustomerController::class, 'login']);
+        Route::post('/login-by-number', [CustomerController::class, 'loginByNumber']);
+        Route::post('/register-by-phone', [CustomerController::class, 'registerByPhone']);
+        Route::post('/verify-code', [CustomerController::class, 'verifyCode']);
+        Route::put('/forgot-password', [CustomerController::class, 'forgotPassword']);
+        Route::put('/reset-password', [CustomerController::class, 'resetPassword']);
+        Route::put('/register-name-email', [CustomerController::class, 'register']);
+        Route::post('/logout', [CustomerController::class, 'logout'])->middleware('auth:sanctum');
     });
     Route::prefix('brand')->group(function (){
         Route::get('/', [BrandController::class, 'index']);
@@ -25,8 +32,8 @@ Route::prefix('v1')->group(function () {
     });
     Route::prefix('category')->group(function (){
         Route::get('/', [CategoryController::class, 'index']);
-        Route::get('/main', [CustomerController::class, 'mainCategories']);
-        Route::get('/{parentId}/sub', [CustomerController::class, 'subCategories']);
+        Route::get('/main', [CategoryController::class, 'mainCategories']);
+        Route::get('/{parentId}/sub', [CategoryController::class, 'subCategories']);
         Route::get('/{id}', [CategoryController::class, 'show']);
     });
 
