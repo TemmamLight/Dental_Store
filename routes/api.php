@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\FavoriteController;
 
 // others 
 use Illuminate\Http\Request;
@@ -43,6 +44,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/regular', [OrderController::class, 'createRegularOrder']); 
         Route::post('/custom', [OrderController::class, 'createCustomOrder']);
         Route::put('update/{id}', [OrderController::class, 'updateOrder']);
+    });
+    Route::prefix('favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::get('/{id}', [FavoriteController::class, 'show']);
+        Route::post('/', [FavoriteController::class, 'store']);
+        Route::delete('/{id}', [FavoriteController::class, 'destroy']);
+        Route::delete('/all', [FavoriteController::class, 'destroyAll']);
     });
 
 });

@@ -11,9 +11,14 @@ class Favorite extends Model
         'favoriteable_id',
         'favoriteable_type',
     ];
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
     public function favoriteable()
     {
         return $this->morphTo();
     }
+    
 }

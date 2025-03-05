@@ -18,25 +18,29 @@ class CustomerController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $customer = Customer::where('email', $request->email)->first();
-
-        if (!$customer || !Hash::check($request->password, $customer->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+        try {
+            $request->validate([
+                'email'    => 'required|email',
+                'password' => 'required',
             ]);
+    
+            $customer = Customer::where('email', $request->email)->first();
+    
+            if (!$customer || !Hash::check($request->password, $customer->password)) {
+                throw ValidationException::withMessages([
+                    'email' => ['The provided credentials are incorrect.'],
+                ]);
+            }
+    
+            $token = $customer->createToken('api_token')->plainTextToken;
+    
+            return response()->json([
+                'token'    => $token,
+                'customer' => new CustomerResource($customer),
+            ]);
+        } catch (\Throwable $th) {
+            throw ValidationException::withMessages([$th]);
         }
-
-        $token = $customer->createToken('api_token')->plainTextToken;
-
-        return response()->json([
-            'token'    => $token,
-            'customer' => new CustomerResource($customer),
-        ]);
     }
 
     /**
